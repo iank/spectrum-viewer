@@ -39,6 +39,7 @@ export function setupUI(controller: SpectrogramController): void {
   const container = $("canvas-container");
 
   let fileLoaded = false;
+  let displayScale = 1.0;
 
   // File handling
   openBtn.addEventListener("click", () => fileInput.click());
@@ -108,6 +109,7 @@ export function setupUI(controller: SpectrogramController): void {
     const size = 2 ** Number(fftSlider.value);
     fftValue.textContent = String(size);
     controller.setFFTSize(size);
+    applyDisplayScale();
     updateScrollbar();
   });
 
@@ -167,7 +169,14 @@ export function setupUI(controller: SpectrogramController): void {
     cursorInfo.style.display = "none";
   });
 
-  // Zoom: Ctrl+wheel or pinch
+  function applyDisplayScale(): void {
+    const fftSize = controller.currentFFTSize;
+    const containerWidth = container.clientWidth;
+    canvas.style.width = Math.round(containerWidth * displayScale) + "px";
+    canvas.style.height = Math.round(fftSize * displayScale) + "px";
+  }
+
+  // Wheel: Ctrl = visual zoom, plain = time scroll
   canvas.addEventListener(
     "wheel",
     (e) => {
@@ -175,13 +184,12 @@ export function setupUI(controller: SpectrogramController): void {
       e.preventDefault();
 
       if (e.ctrlKey || e.metaKey) {
-        // Zoom
-        const factor = e.deltaY > 0 ? 1.2 : 1 / 1.2;
-        const rect = canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        controller.zoomTime(factor, x);
+        // Visual zoom (CSS scale, preserving aspect ratio)
+        const factor = e.deltaY > 0 ? 1 / 1.2 : 1.2;
+        displayScale = Math.max(0.25, Math.min(64, displayScale * factor));
+        applyDisplayScale();
       } else {
-        // Scroll
+        // Time scroll
         const v = controller.viewState;
         const delta = e.deltaY * v.visibleFrames * 0.05;
         controller.scrollTime(delta);
@@ -222,6 +230,7 @@ export function setupUI(controller: SpectrogramController): void {
   // Resize handling
   const resizeObserver = new ResizeObserver(() => {
     controller.resizeCanvas();
+    applyDisplayScale();
   });
   resizeObserver.observe(container);
 }
