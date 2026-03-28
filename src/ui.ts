@@ -1,6 +1,6 @@
-import { SpectrogramController } from "./spectrogram";
 import { parseIQFile } from "./iq-parser";
-import { parseSigMF, findSigMFFile } from "./sigmf";
+import { findSigMFFile, parseSigMF } from "./sigmf";
+import type { SpectrogramController } from "./spectrogram";
 import type { ColormapName } from "./types";
 
 function $(id: string): HTMLElement {
@@ -9,16 +9,16 @@ function $(id: string): HTMLElement {
 
 function formatFrequency(hz: number): string {
   const abs = Math.abs(hz);
-  if (abs >= 1e9) return (hz / 1e9).toFixed(6) + " GHz";
-  if (abs >= 1e6) return (hz / 1e6).toFixed(3) + " MHz";
-  if (abs >= 1e3) return (hz / 1e3).toFixed(1) + " kHz";
-  return hz.toFixed(1) + " Hz";
+  if (abs >= 1e9) return `${(hz / 1e9).toFixed(6)} GHz`;
+  if (abs >= 1e6) return `${(hz / 1e6).toFixed(3)} MHz`;
+  if (abs >= 1e3) return `${(hz / 1e3).toFixed(1)} kHz`;
+  return `${hz.toFixed(1)} Hz`;
 }
 
 function formatTime(seconds: number): string {
-  if (seconds >= 1) return seconds.toFixed(4) + " s";
-  if (seconds >= 1e-3) return (seconds * 1e3).toFixed(3) + " ms";
-  return (seconds * 1e6).toFixed(1) + " \u00B5s";
+  if (seconds >= 1) return `${seconds.toFixed(4)} s`;
+  if (seconds >= 1e-3) return `${(seconds * 1e3).toFixed(3)} ms`;
+  return `${(seconds * 1e6).toFixed(1)} \u00B5s`;
 }
 
 export function setupUI(controller: SpectrogramController): void {
@@ -122,16 +122,10 @@ export function setupUI(controller: SpectrogramController): void {
   });
 
   dbMinInput.addEventListener("change", () => {
-    controller.setDbRange(
-      Number(dbMinInput.value),
-      Number(dbMaxInput.value),
-    );
+    controller.setDbRange(Number(dbMinInput.value), Number(dbMaxInput.value));
   });
   dbMaxInput.addEventListener("change", () => {
-    controller.setDbRange(
-      Number(dbMinInput.value),
-      Number(dbMaxInput.value),
-    );
+    controller.setDbRange(Number(dbMinInput.value), Number(dbMaxInput.value));
   });
 
   colormapSelect.addEventListener("change", () => {
@@ -172,8 +166,8 @@ export function setupUI(controller: SpectrogramController): void {
   function applyDisplayScale(): void {
     const fftSize = controller.currentFFTSize;
     const containerWidth = container.clientWidth;
-    canvas.style.width = Math.round(containerWidth * displayScale) + "px";
-    canvas.style.height = Math.round(fftSize * displayScale) + "px";
+    canvas.style.width = `${Math.round(containerWidth * displayScale)}px`;
+    canvas.style.height = `${Math.round(fftSize * displayScale)}px`;
   }
 
   // Wheel: Ctrl = visual zoom, plain = time scroll

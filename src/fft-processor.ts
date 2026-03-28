@@ -41,7 +41,7 @@ export function computeFrames(
     // Fill input with windowed complex samples
     for (let i = 0; i < fftSize; i++) {
       const w = window[i];
-      input[i * 2] = samples[sampleOffset + i * 2] * w;       // I
+      input[i * 2] = samples[sampleOffset + i * 2] * w; // I
       input[i * 2 + 1] = samples[sampleOffset + i * 2 + 1] * w; // Q
     }
 

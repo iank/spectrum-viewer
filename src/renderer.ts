@@ -115,8 +115,14 @@ export class SpectrogramRenderer {
     // Init spectrogram texture with 1x1 placeholder
     gl.bindTexture(gl.TEXTURE_2D, this.spectrogramTex);
     gl.texImage2D(
-      gl.TEXTURE_2D, 0, gl.R32F,
-      1, 1, 0, gl.RED, gl.FLOAT,
+      gl.TEXTURE_2D,
+      0,
+      gl.R32F,
+      1,
+      1,
+      0,
+      gl.RED,
+      gl.FLOAT,
       new Float32Array([-100]),
     );
     this.setTextureParams(gl);
@@ -124,8 +130,14 @@ export class SpectrogramRenderer {
     // Init colormap texture
     gl.bindTexture(gl.TEXTURE_2D, this.colormapTex);
     gl.texImage2D(
-      gl.TEXTURE_2D, 0, gl.RGBA,
-      256, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA,
+      256,
+      1,
+      0,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
       new Uint8Array(256 * 4).fill(128),
     );
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
@@ -145,8 +157,14 @@ export class SpectrogramRenderer {
     const gl = this.gl;
     gl.bindTexture(gl.TEXTURE_2D, this.colormapTex);
     gl.texImage2D(
-      gl.TEXTURE_2D, 0, gl.RGBA,
-      256, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA,
+      256,
+      1,
+      0,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
       data,
     );
   }
@@ -157,16 +175,21 @@ export class SpectrogramRenderer {
     frameCount: number,
   ): void {
     const gl = this.gl;
-    this.texWidth = fftSize;      // texture width = frequency bins
-    this.texHeight = frameCount;  // texture height = time frames
+    this.texWidth = fftSize; // texture width = frequency bins
+    this.texHeight = frameCount; // texture height = time frames
     this.magnitudeData = magnitudes;
     gl.bindTexture(gl.TEXTURE_2D, this.spectrogramTex);
     // Data layout: frame-major [frame0-bin0, frame0-bin1, ..., frame1-bin0, ...]
     // texImage2D reads row-major, so width=fftSize gives one row per frame
     gl.texImage2D(
-      gl.TEXTURE_2D, 0, gl.R32F,
-      fftSize, frameCount, 0,
-      gl.RED, gl.FLOAT,
+      gl.TEXTURE_2D,
+      0,
+      gl.R32F,
+      fftSize,
+      frameCount,
+      0,
+      gl.RED,
+      gl.FLOAT,
       magnitudes,
     );
     this.setTextureParams(gl);

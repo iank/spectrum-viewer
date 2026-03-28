@@ -1,7 +1,7 @@
-import type { IQFile, ViewState, CursorInfo, ColormapName } from "./types";
-import { SpectrogramRenderer } from "./renderer";
-import { computeHannWindow, computeFrames } from "./fft-processor";
 import { getColormap } from "./colormap";
+import { computeFrames, computeHannWindow } from "./fft-processor";
+import { SpectrogramRenderer } from "./renderer";
+import type { ColormapName, CursorInfo, IQFile, ViewState } from "./types";
 
 export class SpectrogramController {
   private canvas: HTMLCanvasElement;
@@ -52,7 +52,8 @@ export class SpectrogramController {
       return;
     }
     // One frame per fftSize samples (no overlap base)
-    this.view.totalFrames = Math.floor((totalSamples - this.fftSize) / this.fftSize) + 1;
+    this.view.totalFrames =
+      Math.floor((totalSamples - this.fftSize) / this.fftSize) + 1;
   }
 
   loadFile(file: IQFile): void {
@@ -109,10 +110,16 @@ export class SpectrogramController {
 
     const minVisible = Math.min(2, this.view.totalFrames);
     let newVisible = Math.round(this.view.visibleFrames * factor);
-    newVisible = Math.max(minVisible, Math.min(this.view.totalFrames, newVisible));
+    newVisible = Math.max(
+      minVisible,
+      Math.min(this.view.totalFrames, newVisible),
+    );
 
     let newStart = Math.round(centerFrame - centerFraction * newVisible);
-    newStart = Math.max(0, Math.min(this.view.totalFrames - newVisible, newStart));
+    newStart = Math.max(
+      0,
+      Math.min(this.view.totalFrames - newVisible, newStart),
+    );
 
     this.view.startFrame = newStart;
     this.view.visibleFrames = newVisible;
@@ -130,7 +137,10 @@ export class SpectrogramController {
   }
 
   setStartFrame(frame: number): void {
-    const maxStart = Math.max(0, this.view.totalFrames - this.view.visibleFrames);
+    const maxStart = Math.max(
+      0,
+      this.view.totalFrames - this.view.visibleFrames,
+    );
     this.view.startFrame = Math.max(0, Math.min(maxStart, Math.round(frame)));
     this.updateView();
   }
@@ -167,7 +177,7 @@ export class SpectrogramController {
     this.canvas.width = Math.round(w * dpr);
     // Height = fftSize pixels (1:1 bin-to-pixel mapping, like inspectrum)
     this.canvas.height = this.fftSize;
-    this.canvas.style.height = this.fftSize + "px";
+    this.canvas.style.height = `${this.fftSize}px`;
     if (this.iqFile) {
       this.updateView();
     }
@@ -201,9 +211,12 @@ export class SpectrogramController {
     const lastFrameStart = clampedStart + (textureColumns - 1) * stride;
     let actualColumns = textureColumns;
     if (lastFrameStart + this.fftSize > this.iqFile.sampleCount) {
-      actualColumns = Math.max(1, Math.floor(
-        (this.iqFile.sampleCount - this.fftSize - clampedStart) / stride,
-      ) + 1);
+      actualColumns = Math.max(
+        1,
+        Math.floor(
+          (this.iqFile.sampleCount - this.fftSize - clampedStart) / stride,
+        ) + 1,
+      );
     }
 
     const magnitudes = computeFrames(

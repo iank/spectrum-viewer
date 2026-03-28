@@ -1,7 +1,7 @@
-import { test, expect } from "@playwright/test";
-import * as fs from "fs";
-import * as path from "path";
-import * as os from "os";
+import * as fs from "node:fs";
+import * as os from "node:os";
+import * as path from "node:path";
+import { expect, test } from "@playwright/test";
 
 const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "spectrum-test-"));
 
@@ -59,7 +59,7 @@ function generateSigMFMeta(
     captures: [],
     annotations: [],
   };
-  const filePath = path.join(tmpDir, baseName + ".sigmf-meta");
+  const filePath = path.join(tmpDir, `${baseName}.sigmf-meta`);
   fs.writeFileSync(filePath, JSON.stringify(meta));
   return filePath;
 }
@@ -103,7 +103,11 @@ test.describe("Spectrum Viewer", () => {
       gl.readPixels(
         Math.floor(canvas.width / 2),
         Math.floor(canvas.height / 2),
-        1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixels,
+        1,
+        1,
+        gl.RGBA,
+        gl.UNSIGNED_BYTE,
+        pixels,
       );
       // At least some color channel should be nonzero
       return pixels[0] + pixels[1] + pixels[2] > 0;
@@ -130,7 +134,11 @@ test.describe("Spectrum Viewer", () => {
       gl.readPixels(
         Math.floor(canvas.width / 2),
         Math.floor(canvas.height / 2),
-        1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixels,
+        1,
+        1,
+        gl.RGBA,
+        gl.UNSIGNED_BYTE,
+        pixels,
       );
       return pixels[0] + pixels[1] + pixels[2] > 0;
     });
