@@ -163,37 +163,28 @@ test.describe("Spectrum Viewer", () => {
     await page.locator("#file-input").setInputFiles(fixturePath);
     await expect(page.locator("#empty-state")).toBeHidden();
 
-    // Get initial pixel at center
-    const getPixel = async () =>
-      page.evaluate(() => {
-        const canvas = document.getElementById(
-          "spectrogram-canvas",
-        ) as HTMLCanvasElement;
-        const gl = canvas.getContext("webgl2", { preserveDrawingBuffer: true });
-        if (!gl) return [0, 0, 0];
-        const pixels = new Uint8Array(4);
-        gl.readPixels(
-          Math.floor(canvas.width / 2),
-          Math.floor(canvas.height / 2),
-          1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixels,
-        );
-        return [pixels[0], pixels[1], pixels[2]];
-      });
+    // Check canvas height matches default FFT size
+    const height1 = await page.evaluate(() => {
+      const canvas = document.getElementById(
+        "spectrogram-canvas",
+      ) as HTMLCanvasElement;
+      return canvas.height;
+    });
+    expect(height1).toBe(1024); // default FFT size
 
-    const pixel1 = await getPixel();
-
-    // Change FFT size
-    await page.locator("#fft-size").selectOption("4096");
+    // Change FFT size via slider (value 12 = 2^12 = 4096)
+    await page.locator("#fft-size").fill("12");
+    await page.locator("#fft-size").dispatchEvent("input");
     await page.waitForTimeout(200);
 
-    const pixel2 = await getPixel();
-
-    // Pixels should differ (different FFT resolution changes the render)
-    const changed =
-      pixel1[0] !== pixel2[0] ||
-      pixel1[1] !== pixel2[1] ||
-      pixel1[2] !== pixel2[2];
-    expect(changed).toBe(true);
+    // Canvas height should now match new FFT size
+    const height2 = await page.evaluate(() => {
+      const canvas = document.getElementById(
+        "spectrogram-canvas",
+      ) as HTMLCanvasElement;
+      return canvas.height;
+    });
+    expect(height2).toBe(4096);
   });
 
   test("SigMF metadata populates fields", async ({ page }) => {

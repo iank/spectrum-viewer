@@ -68,6 +68,7 @@ export class SpectrogramController {
     if (size === this.fftSize) return;
     this.fftSize = size;
     this.window = computeHannWindow(size);
+    this.resizeCanvas();
     if (this.iqFile) {
       this.recomputeTotalFrames();
       this.view.startFrame = 0;
@@ -163,9 +164,10 @@ export class SpectrogramController {
     if (!container) return;
     const dpr = window.devicePixelRatio || 1;
     const w = container.clientWidth;
-    const h = container.clientHeight;
     this.canvas.width = Math.round(w * dpr);
-    this.canvas.height = Math.round(h * dpr);
+    // Height = fftSize pixels (1:1 bin-to-pixel mapping, like inspectrum)
+    this.canvas.height = this.fftSize;
+    this.canvas.style.height = this.fftSize + "px";
     if (this.iqFile) {
       this.updateView();
     }

@@ -24,7 +24,8 @@ function formatTime(seconds: number): string {
 export function setupUI(controller: SpectrogramController): void {
   const openBtn = $("open-btn") as HTMLButtonElement;
   const fileInput = $("file-input") as HTMLInputElement;
-  const fftSelect = $("fft-size") as HTMLSelectElement;
+  const fftSlider = $("fft-size") as HTMLInputElement;
+  const fftValue = $("fft-size-value");
   const sampleRateInput = $("sample-rate") as HTMLInputElement;
   const centerFreqInput = $("center-freq") as HTMLInputElement;
   const dbMinInput = $("db-min") as HTMLInputElement;
@@ -103,8 +104,10 @@ export function setupUI(controller: SpectrogramController): void {
   }
 
   // Controls
-  fftSelect.addEventListener("change", () => {
-    controller.setFFTSize(Number(fftSelect.value));
+  fftSlider.addEventListener("input", () => {
+    const size = 2 ** Number(fftSlider.value);
+    fftValue.textContent = String(size);
+    controller.setFFTSize(size);
     updateScrollbar();
   });
 

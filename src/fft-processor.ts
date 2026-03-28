@@ -33,6 +33,7 @@ export function computeFrames(
   const output = fft.createComplexArray();
   const result = new Float32Array(frameCount * fftSize);
   const half = fftSize >> 1;
+  const invFFTSize = 1 / fftSize;
 
   for (let f = 0; f < frameCount; f++) {
     const sampleOffset = (sampleStart + f * stride) * 2; // *2 for interleaved IQ
@@ -47,12 +48,12 @@ export function computeFrames(
     fft.transform(output, input);
 
     // Compute magnitude in dB with fftshift (swap halves so DC is center)
+    // Normalize by 1/fftSize (matches inspectrum)
     const outOffset = f * fftSize;
     for (let i = 0; i < fftSize; i++) {
-      // fftshift: map bin i to output position
       const srcBin = (i + half) % fftSize;
-      const re = output[srcBin * 2];
-      const im = output[srcBin * 2 + 1];
+      const re = output[srcBin * 2] * invFFTSize;
+      const im = output[srcBin * 2 + 1] * invFFTSize;
       result[outOffset + i] = 10 * Math.log10(re * re + im * im + 1e-20);
     }
   }

@@ -57,13 +57,12 @@
     #canvas-container {
       flex: 1;
       position: relative;
-      overflow: hidden;
+      overflow-y: auto;
       min-height: 0;
     }
     #spectrogram-canvas {
       display: block;
       width: 100%;
-      height: 100%;
     }
     #cursor-info {
       position: absolute;
@@ -143,19 +142,8 @@
     <button id="open-btn">Open File</button>
     <input type="file" id="file-input" accept=".fc32,.sc16,.sigmf-meta" multiple />
     <label>FFT
-      <select id="fft-size">
-        <option value="8">8</option>
-        <option value="16">16</option>
-        <option value="32">32</option>
-        <option value="64">64</option>
-        <option value="128">128</option>
-        <option value="256">256</option>
-        <option value="512">512</option>
-        <option value="1024" selected>1024</option>
-        <option value="2048">2048</option>
-        <option value="4096">4096</option>
-        <option value="8192">8192</option>
-      </select>
+      <input type="range" id="fft-size" min="3" max="13" value="10" style="width:100px;vertical-align:middle" />
+      <span id="fft-size-value">1024</span>
     </label>
     <label>Rate
       <input type="number" id="sample-rate" value="1000000" min="1" step="1000" /> Hz
