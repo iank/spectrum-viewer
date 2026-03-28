@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Spectrum Viewer</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #1a1a1a;
+      color: #e0e0e0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+      font-size: 13px;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+    #toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 8px 12px;
+      background: #252525;
+      border-bottom: 1px solid #333;
+      align-items: center;
+    }
+    #toolbar label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: #aaa;
+    }
+    #toolbar select,
+    #toolbar input[type="number"] {
+      background: #333;
+      color: #e0e0e0;
+      border: 1px solid #555;
+      border-radius: 3px;
+      padding: 3px 6px;
+      font-size: 13px;
+      font-family: inherit;
+    }
+    #toolbar input[type="number"] { width: 110px; }
+    #toolbar button {
+      background: #444;
+      color: #e0e0e0;
+      border: 1px solid #555;
+      border-radius: 3px;
+      padding: 4px 12px;
+      cursor: pointer;
+      font-size: 13px;
+      font-family: inherit;
+    }
+    #toolbar button:hover { background: #555; }
+    #file-input { display: none; }
+    #canvas-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      min-height: 0;
+    }
+    #spectrogram-canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+    #cursor-info {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(0, 0, 0, 0.75);
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      line-height: 1.6;
+      pointer-events: none;
+      display: none;
+      white-space: pre;
+    }
+    #drop-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(60, 120, 255, 0.15);
+      border: 2px dashed #4a90d9;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: #8bb8e8;
+      pointer-events: none;
+      z-index: 10;
+    }
+    #progress-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 20;
+    }
+    #progress-bar-container {
+      width: 300px;
+      height: 6px;
+      background: #333;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    #progress-bar {
+      height: 100%;
+      background: #4a90d9;
+      width: 0%;
+      transition: width 0.1s;
+    }
+    #scrollbar-container {
+      padding: 4px 12px;
+      background: #252525;
+      border-top: 1px solid #333;
+    }
+    #scrollbar {
+      width: 100%;
+      accent-color: #4a90d9;
+    }
+    #empty-state {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 12px;
+      color: #666;
+      font-size: 16px;
+    }
+    #empty-state span { font-size: 32px; }
+  </style>
+</head>
+<body>
+  <div id="toolbar">
+    <button id="open-btn">Open File</button>
+    <input type="file" id="file-input" accept=".fc32,.sc16,.sigmf-meta" multiple />
+    <label>FFT
+      <select id="fft-size">
+        <option value="8">8</option>
+        <option value="16">16</option>
+        <option value="32">32</option>
+        <option value="64">64</option>
+        <option value="128">128</option>
+        <option value="256">256</option>
+        <option value="512">512</option>
+        <option value="1024" selected>1024</option>
+        <option value="2048">2048</option>
+        <option value="4096">4096</option>
+        <option value="8192">8192</option>
+      </select>
+    </label>
+    <label>Rate
+      <input type="number" id="sample-rate" value="1000000" min="1" step="1000" /> Hz
+    </label>
+    <label>Center
+      <input type="number" id="center-freq" value="0" step="1000" /> Hz
+    </label>
+    <label>dB min
+      <input type="number" id="db-min" value="-80" step="5" />
+    </label>
+    <label>dB max
+      <input type="number" id="db-max" value="0" step="5" />
+    </label>
+    <label>Colormap
+      <select id="colormap">
+        <option value="viridis" selected>Viridis</option>
+        <option value="inferno">Inferno</option>
+      </select>
+    </label>
+  </div>
+  <div id="canvas-container">
+    <canvas id="spectrogram-canvas"></canvas>
+    <div id="cursor-info"></div>
+    <div id="drop-overlay">Drop IQ file here</div>
+    <div id="progress-overlay">
+      <div>Computing spectrogram...</div>
+      <div id="progress-bar-container">
+        <div id="progress-bar"></div>
+      </div>
+    </div>
+    <div id="empty-state">
+      <span>&#x1F4E1;</span>
+      Drop a .fc32 or .sc16 file here, or click Open File
+    </div>
+  </div>
+  <div id="scrollbar-container">
+    <input type="range" id="scrollbar" min="0" max="0" value="0" />
+  </div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
